@@ -1,8 +1,8 @@
-package com.liveklass.command.entity;
+package com.liveklass.command.domain.entity;
 
 
 import com.liveklass.auth.AppUser;
-import com.liveklass.command.enumeration.LectureStatus;
+import com.liveklass.command.domain.enumeration.LectureStatus;
 import com.liveklass.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

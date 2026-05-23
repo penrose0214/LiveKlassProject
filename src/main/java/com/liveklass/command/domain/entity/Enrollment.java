@@ -1,7 +1,7 @@
-package com.liveklass.command.entity;
+package com.liveklass.command.domain.entity;
 
 import com.liveklass.auth.AppUser;
-import com.liveklass.command.enumeration.EnrollmentStatus;
+import com.liveklass.command.domain.enumeration.EnrollmentStatus;
 import com.liveklass.common.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

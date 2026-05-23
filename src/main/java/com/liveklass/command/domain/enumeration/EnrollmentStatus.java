@@ -1,4 +1,4 @@
-package com.liveklass.command.enumeration;
+package com.liveklass.command.domain.enumeration;
 
 public enum EnrollmentStatus {
     WAITLISTED,
