@@ -45,3 +45,7 @@ bin/
 ### ignore sensitive files
 .env
 application-local.yml
+/.idea/AndroidProjectSystem.xml
+/.idea/gradle.xml
+/.idea/misc.xml
+/.idea/.gitignore
