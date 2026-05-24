@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liveklass.command.application.dto.CreateLectureRequest;
 import com.liveklass.command.application.dto.UpdateLectureRequest;
 import com.liveklass.command.application.service.LectureCommandService;
+import com.liveklass.common.exception.DomainValidationException;
+import com.liveklass.common.exception.GlobalExceptionHandler;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class LectureCommandControllerTest {
@@ -28,7 +31,9 @@ class LectureCommandControllerTest {
     @BeforeEach
     void setUp() {
         lectureCommandService = Mockito.mock(LectureCommandService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new LectureCommandController(lectureCommandService)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new LectureCommandController(lectureCommandService))
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
         objectMapper = new ObjectMapper().findAndRegisterModules();
     }
 
@@ -54,6 +59,33 @@ class LectureCommandControllerTest {
                 .andExpect(status().isOk());
 
         verify(lectureCommandService).createLecture(eq(1L), any(CreateLectureRequest.class));
+    }
+
+    @Test
+    // LEC-REG-002
+    // 엔티티 유효성 검증 예외가 발생하면 400 Bad Request와 에러 메시지를 반환하는지 검증한다.
+    void createLecture_whenValidationFails_returnsBadRequest() throws Exception {
+        CreateLectureRequest request = new CreateLectureRequest(
+                " ",
+                "description",
+                10000L,
+                30,
+                LocalDateTime.of(2026, 5, 24, 10, 0),
+                LocalDateTime.of(2026, 5, 25, 10, 0),
+                LocalDateTime.of(2026, 6, 1, 10, 0),
+                LocalDateTime.of(2026, 6, 30, 10, 0)
+        );
+        Mockito.doThrow(new DomainValidationException("강의 제목은 필수이며 공백일 수 없습니다."))
+                .when(lectureCommandService)
+                .createLecture(eq(1L), any(CreateLectureRequest.class));
+
+        mockMvc.perform(post("/api/command/lectures")
+                        .header("userId", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_INPUT"))
+                .andExpect(jsonPath("$.message").value("강의 제목은 필수이며 공백일 수 없습니다."));
     }
 
     @Test

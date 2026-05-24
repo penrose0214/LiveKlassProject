@@ -6,6 +6,7 @@ import com.liveklass.command.application.dto.UpdateLectureRequest;
 import com.liveklass.command.domain.entity.Lecture;
 import com.liveklass.command.domain.enumeration.LectureStatus;
 import com.liveklass.command.domain.policy.LecturePolicy;
+import com.liveklass.common.exception.DomainValidationException;
 import com.liveklass.command.domain.repository.LectureRepository;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -63,16 +64,6 @@ class LectureCommandServiceTest {
 
         lectureCommandService.createLecture(1L, request);
 
-        verify(lecturePolicy).validateLectureDetails(
-                request.title(),
-                request.description(),
-                request.price(),
-                request.capacity(),
-                request.recruitmentStartAt(),
-                request.recruitmentEndAt(),
-                request.lectureStartAt(),
-                request.lectureEndAt()
-        );
         ArgumentCaptor<Lecture> captor = ArgumentCaptor.forClass(Lecture.class);
         verify(lectureRepository).save(captor.capture());
         Lecture saved = captor.getValue();
@@ -101,16 +92,6 @@ class LectureCommandServiceTest {
         lectureCommandService.updateLecture(1L, 10L, request);
 
         verify(lecturePolicy).validateCreator(lecture, 1L);
-        verify(lecturePolicy).validateLectureDetails(
-                request.title(),
-                request.description(),
-                request.price(),
-                request.capacity(),
-                request.recruitmentStartAt(),
-                request.recruitmentEndAt(),
-                request.lectureStartAt(),
-                request.lectureEndAt()
-        );
         assertThat(lecture.getTitle()).isEqualTo("new-title");
         assertThat(lecture.getPrice()).isEqualTo(20000L);
     }
@@ -119,6 +100,8 @@ class LectureCommandServiceTest {
     // LEC-REG-002
     // 강의 등록 요청값이 유효하지 않으면 저장을 시도하지 않고 예외를 전파하는지 검증한다.
     void createLecture_whenInvalid_throwsAndDoesNotSave() {
+        AppUser creator = new AppUser("creator");
+        ReflectionTestUtils.setField(creator, "id", 1L);
         CreateLectureRequest request = new CreateLectureRequest(
                 "",
                 "description",
@@ -129,21 +112,10 @@ class LectureCommandServiceTest {
                 LocalDateTime.of(2026, 6, 1, 10, 0),
                 LocalDateTime.of(2026, 6, 30, 10, 0)
         );
-        org.mockito.Mockito.doThrow(new IllegalArgumentException("강의 제목은 필수이며 공백일 수 없습니다."))
-                .when(lecturePolicy)
-                .validateLectureDetails(
-                        request.title(),
-                        request.description(),
-                        request.price(),
-                        request.capacity(),
-                        request.recruitmentStartAt(),
-                        request.recruitmentEndAt(),
-                        request.lectureStartAt(),
-                        request.lectureEndAt()
-                );
+        when(entityManager.getReference(AppUser.class, 1L)).thenReturn(creator);
 
         assertThatThrownBy(() -> lectureCommandService.createLecture(1L, request))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("강의 제목");
 
         verify(lectureRepository, never()).save(any());
