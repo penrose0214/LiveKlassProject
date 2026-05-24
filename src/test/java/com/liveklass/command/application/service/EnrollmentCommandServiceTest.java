@@ -6,6 +6,7 @@ import com.liveklass.command.application.dto.CancelEnrollmentResponse;
 import com.liveklass.command.application.dto.ConfirmPaymentResponse;
 import com.liveklass.command.domain.entity.Enrollment;
 import com.liveklass.command.domain.entity.Lecture;
+import com.liveklass.command.domain.repository.EnrollValidation;
 import com.liveklass.command.domain.enumeration.EnrollmentStatus;
 import com.liveklass.command.domain.enumeration.LectureStatus;
 import com.liveklass.command.domain.policy.CapacityPolicy;
@@ -30,10 +31,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,8 +77,8 @@ class EnrollmentCommandServiceTest {
         Lecture lecture = openLecture();
         AppUser applicant = user(2L, "student");
         when(lectureRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(lecture));
-        when(enrollmentRepository.existsActiveEnrollment(eq(10L), eq(2L), anyCollection())).thenReturn(false);
-        when(enrollmentRepository.countOccupiedByLectureId(eq(10L), anyCollection())).thenReturn(1L);
+        when(enrollmentRepository.getEnrollValidation(eq(10L), eq(2L), any(), any()))
+                .thenReturn(new EnrollValidation(1L, false));
         when(capacityPolicy.hasAvailableSeat(lecture, 1L)).thenReturn(true);
         when(entityManager.getReference(AppUser.class, 2L)).thenReturn(applicant);
         when(enrollmentRepository.save(any(Enrollment.class))).thenAnswer(invocation -> {
@@ -106,8 +105,8 @@ class EnrollmentCommandServiceTest {
         Lecture lecture = openLecture();
         AppUser applicant = user(2L, "student");
         when(lectureRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(lecture));
-        when(enrollmentRepository.existsActiveEnrollment(eq(10L), eq(2L), anyCollection())).thenReturn(false);
-        when(enrollmentRepository.countOccupiedByLectureId(eq(10L), anyCollection())).thenReturn(30L);
+        when(enrollmentRepository.getEnrollValidation(eq(10L), eq(2L), any(), any()))
+                .thenReturn(new EnrollValidation(30L, false));
         when(capacityPolicy.hasAvailableSeat(lecture, 30L)).thenReturn(false);
         when(entityManager.getReference(AppUser.class, 2L)).thenReturn(applicant);
         when(enrollmentRepository.save(any(Enrollment.class))).thenAnswer(invocation -> {
@@ -128,7 +127,8 @@ class EnrollmentCommandServiceTest {
     void apply_whenDuplicateEnrollmentExists_throws() {
         Lecture lecture = openLecture();
         when(lectureRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(lecture));
-        when(enrollmentRepository.existsActiveEnrollment(eq(10L), eq(2L), anyCollection())).thenReturn(true);
+        when(enrollmentRepository.getEnrollValidation(eq(10L), eq(2L), any(), any()))
+                .thenReturn(new EnrollValidation(1L, true));
 
         assertThatThrownBy(() -> enrollmentCommandService.apply(2L, 10L))
                 .isInstanceOf(IllegalArgumentException.class)
