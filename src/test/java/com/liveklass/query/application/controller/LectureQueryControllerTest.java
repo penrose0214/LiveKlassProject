@@ -77,7 +77,7 @@ class LectureQueryControllerTest {
     // 상태 필터를 함께 전달하면 해당 상태 목록이 서비스로 전달되는지 검증한다.
     void getLectures_withStatuses_passesFilter() throws Exception {
         when(lectureQueryService.getLectures(List.of(LectureStatus.OPEN, LectureStatus.CLOSED), 0, 20))
-                .thenReturn(Page.empty());
+                .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
 
         mockMvc.perform(get("/api/query/lectures")
                         .param("statuses", "OPEN,CLOSED"))
