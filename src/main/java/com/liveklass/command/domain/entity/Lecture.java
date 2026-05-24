@@ -31,7 +31,6 @@ public class Lecture extends BaseTimeEntity {
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
-    @Lob
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
