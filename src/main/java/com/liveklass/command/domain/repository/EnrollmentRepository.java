@@ -17,26 +17,20 @@ public interface EnrollmentRepository extends Repository<Enrollment, Long> {
     Enrollment save(Enrollment enrollment);
 
     @Query("""
-            select case when count(e) > 0 then true else false end
+            select new com.liveklass.command.domain.repository.EnrollValidation(
+                count(case when e.status in :occupiedStatuses then 1 else null end),
+                case when count(case when e.user.id = :userId and e.status in :activeStatuses then 1 else null end) > 0
+                     then true
+                     else false
+                end
+            )
             from Enrollment e
             where e.lecture.id = :lectureId
-              and e.user.id = :userId
-              and e.status in :activeStatuses
             """)
-    boolean existsActiveEnrollment(
+    EnrollValidation getEnrollValidation(
             @Param("lectureId") Long lectureId,
             @Param("userId") Long userId,
-            @Param("activeStatuses") Collection<EnrollmentStatus> activeStatuses
-    );
-
-    @Query("""
-            select count(e)
-            from Enrollment e
-            where e.lecture.id = :lectureId
-              and e.status in :occupiedStatuses
-            """)
-    long countOccupiedByLectureId(
-            @Param("lectureId") Long lectureId,
+            @Param("activeStatuses") Collection<EnrollmentStatus> activeStatuses,
             @Param("occupiedStatuses") Collection<EnrollmentStatus> occupiedStatuses
     );
 

@@ -11,6 +11,7 @@ import com.liveklass.command.domain.policy.CapacityPolicy;
 import com.liveklass.command.domain.policy.EnrollmentPolicy;
 import com.liveklass.command.domain.policy.LecturePolicy;
 import com.liveklass.command.domain.policy.WaitlistPolicy;
+import com.liveklass.command.domain.repository.EnrollValidation;
 import com.liveklass.command.domain.repository.EnrollmentRepository;
 import com.liveklass.command.domain.repository.LectureRepository;
 import jakarta.persistence.EntityManager;
@@ -48,16 +49,20 @@ public class EnrollmentCommandService {
         lecturePolicy.validateRecruitmentOpen(lecture, now);
         enrollmentPolicy.validateApplicantNotCreator(lecture.getCreator().getId(), userId);
 
-        boolean alreadyApplied = enrollmentRepository.existsActiveEnrollment(lectureId, userId, ACTIVE_STATUSES);
-        if (alreadyApplied) {
+        EnrollValidation enrollValidation = enrollmentRepository.getEnrollValidation(
+                lectureId,
+                userId,
+                ACTIVE_STATUSES,
+                OCCUPIED_STATUSES
+        );
+        if (enrollValidation.hasActiveEnrollment()) {
             throw new IllegalArgumentException("이미 활성 신청이 존재합니다.");
         }
 
-        long occupiedCount = enrollmentRepository.countOccupiedByLectureId(lectureId, OCCUPIED_STATUSES);
         AppUser user = entityManager.getReference(AppUser.class, userId);
 
         Enrollment enrollment;
-        if (capacityPolicy.hasAvailableSeat(lecture, occupiedCount)) {
+        if (capacityPolicy.hasAvailableSeat(lecture, enrollValidation.occupiedCount())) {
             enrollment = Enrollment.pending(lecture, user, now, now.plusDays(1));
         } else {
             enrollment = Enrollment.waitlisted(lecture, user, now);
