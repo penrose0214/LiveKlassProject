@@ -30,6 +30,8 @@ class EnrollmentQueryControllerTest {
     }
 
     @Test
+    // ENR-LIST-001, ACC-AUTH-001
+    // userId 헤더로 내 수강 신청 목록 조회 요청을 받고 목록 응답을 JSON 배열로 반환하는지 검증한다.
     void getMyEnrollments_returnsList() throws Exception {
         when(enrollmentQueryService.getMyEnrollments(1L)).thenReturn(List.of(new MyEnrollmentResponse(
                 10L,
@@ -57,6 +59,8 @@ class EnrollmentQueryControllerTest {
     }
 
     @Test
+    // LEC-DETAIL-002
+    // lectureId 경로값으로 강의별 수강생 목록 조회 요청 시 수강생 목록을 JSON 배열로 반환하는지 검증한다.
     void getLectureStudents_returnsList() throws Exception {
         when(enrollmentQueryService.getLectureStudents(20L)).thenReturn(List.of(new LectureStudentResponse(
                 10L,

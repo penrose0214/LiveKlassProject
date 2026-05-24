@@ -32,6 +32,8 @@ class LectureQueryServiceTest {
     }
 
     @Test
+    // LEC-LIST-001, LEC-LIST-002
+    // 강의 목록 조회 시 리포지토리 결과를 그대로 반환하는지 검증한다.
     void getLectures_returnsRepositoryResult() {
         List<LectureSummaryResponse> responses = List.of(new LectureSummaryResponse(
                 1L,
@@ -55,6 +57,8 @@ class LectureQueryServiceTest {
     }
 
     @Test
+    // LEC-DETAIL-001
+    // 강의 상세 조회 시 리포지토리에서 조회한 상세 응답을 그대로 반환하는지 검증한다.
     void getLectureDetail_whenFound_returnsDetail() {
         LectureDetailResponse response = new LectureDetailResponse(
                 10L,
@@ -81,6 +85,8 @@ class LectureQueryServiceTest {
     }
 
     @Test
+    // LEC-DETAIL-001
+    // 강의 상세 조회 대상이 없으면 예외를 발생시키는지 검증한다.
     void getLectureDetail_whenMissing_throws() {
         when(lectureQueryRepository.findLectureDetail(10L)).thenReturn(Optional.empty());
 

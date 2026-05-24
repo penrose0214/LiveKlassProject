@@ -30,6 +30,8 @@ class LectureQueryControllerTest {
     }
 
     @Test
+    // LEC-LIST-001, LEC-LIST-002
+    // 강의 목록 조회 요청 시 강의 목록 응답을 JSON 배열로 반환하는지 검증한다.
     void getLectures_returnsList() throws Exception {
         when(lectureQueryService.getLectures()).thenReturn(List.of(new LectureSummaryResponse(
                 1L,
@@ -54,6 +56,8 @@ class LectureQueryControllerTest {
     }
 
     @Test
+    // LEC-DETAIL-001
+    // lectureId 경로값으로 강의 상세 조회 요청 시 상세 정보를 JSON으로 반환하는지 검증한다.
     void getLectureDetail_returnsDetail() throws Exception {
         when(lectureQueryService.getLectureDetail(10L)).thenReturn(new LectureDetailResponse(
                 10L,

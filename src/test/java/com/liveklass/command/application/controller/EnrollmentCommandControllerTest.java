@@ -32,6 +32,8 @@ class EnrollmentCommandControllerTest {
     }
 
     @Test
+    // ENR-APPLY-001, ACC-AUTH-001
+    // userId 헤더와 lectureId 경로값으로 수강 신청 요청을 받고 신청 결과를 JSON으로 반환하는지 검증한다.
     void apply_callsServiceAndReturnsOk() throws Exception {
         when(enrollmentCommandService.apply(1L, 10L)).thenReturn(new ApplyEnrollmentResponse(
                 100L,
@@ -53,6 +55,8 @@ class EnrollmentCommandControllerTest {
     }
 
     @Test
+    // ENR-PAY-002, ACC-AUTH-001
+    // userId 헤더와 enrollmentId 경로값으로 결제 확정 요청을 받고 확정 결과를 JSON으로 반환하는지 검증한다.
     void confirmPayment_callsServiceAndReturnsOk() throws Exception {
         when(enrollmentCommandService.confirmPayment(2L, 20L)).thenReturn(new ConfirmPaymentResponse(
                 20L,
@@ -70,6 +74,8 @@ class EnrollmentCommandControllerTest {
     }
 
     @Test
+    // ENR-CANCEL-001, ACC-AUTH-001
+    // userId 헤더와 enrollmentId 경로값으로 수강 취소 요청을 받고 취소 결과를 JSON으로 반환하는지 검증한다.
     void cancel_callsServiceAndReturnsOk() throws Exception {
         when(enrollmentCommandService.cancel(3L, 30L)).thenReturn(new CancelEnrollmentResponse(
                 30L,

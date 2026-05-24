@@ -30,6 +30,8 @@ class EnrollmentQueryServiceTest {
     }
 
     @Test
+    // ENR-LIST-001
+    // 내 수강 신청 목록 조회 시 리포지토리 결과를 그대로 반환하는지 검증한다.
     void getMyEnrollments_returnsRepositoryResult() {
         List<MyEnrollmentResponse> responses = List.of(new MyEnrollmentResponse(
                 10L,
@@ -55,6 +57,8 @@ class EnrollmentQueryServiceTest {
     }
 
     @Test
+    // LEC-DETAIL-002
+    // 강의별 수강생 목록 조회 시 리포지토리 결과를 그대로 반환하는지 검증한다.
     void getLectureStudents_returnsRepositoryResult() {
         List<LectureStudentResponse> responses = List.of(new LectureStudentResponse(
                 10L,

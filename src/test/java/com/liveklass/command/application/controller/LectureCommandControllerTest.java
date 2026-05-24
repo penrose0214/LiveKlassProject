@@ -33,6 +33,8 @@ class LectureCommandControllerTest {
     }
 
     @Test
+    // LEC-REG-001, ACC-AUTH-001
+    // userId 헤더와 강의 등록 요청 본문을 받아 서비스에 전달하고 200 OK를 반환하는지 검증한다.
     void createLecture_callsServiceAndReturnsOk() throws Exception {
         CreateLectureRequest request = new CreateLectureRequest(
                 "title",
@@ -55,6 +57,8 @@ class LectureCommandControllerTest {
     }
 
     @Test
+    // ACC-AUTH-001
+    // userId 헤더와 강의 수정 요청 본문 및 lectureId 경로값을 받아 서비스에 전달하는지 검증한다.
     void updateLecture_callsServiceAndReturnsOk() throws Exception {
         UpdateLectureRequest request = new UpdateLectureRequest(
                 "new-title",
@@ -77,6 +81,8 @@ class LectureCommandControllerTest {
     }
 
     @Test
+    // LEC-STAT-001, ACC-AUTH-001
+    // userId 헤더와 lectureId 경로값으로 강의 OPEN 요청을 서비스에 위임하는지 검증한다.
     void openLecture_callsServiceAndReturnsOk() throws Exception {
         mockMvc.perform(post("/api/command/lectures/10/open")
                         .header("userId", 3L))
@@ -86,6 +92,8 @@ class LectureCommandControllerTest {
     }
 
     @Test
+    // LEC-STAT-002, ACC-AUTH-001
+    // userId 헤더와 lectureId 경로값으로 강의 CLOSED 요청을 서비스에 위임하는지 검증한다.
     void closeLecture_callsServiceAndReturnsOk() throws Exception {
         mockMvc.perform(post("/api/command/lectures/10/close")
                         .header("userId", 4L))
