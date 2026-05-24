@@ -1,8 +1,10 @@
 package com.liveklass.query.application.controller;
 
+import com.liveklass.command.domain.enumeration.LectureStatus;
 import com.liveklass.query.application.dto.LectureDetailResponse;
 import com.liveklass.query.application.dto.LectureSummaryResponse;
 import com.liveklass.query.application.service.LectureQueryService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +25,11 @@ public class LectureQueryController {
     // 강의 목록 조회
     @GetMapping
     public ResponseEntity<Page<LectureSummaryResponse>> getLectures(
+            @RequestParam(required = false) List<LectureStatus> statuses,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        return ResponseEntity.ok(lectureQueryService.getLectures(page, size));
+        return ResponseEntity.ok(lectureQueryService.getLectures(statuses, page, size));
     }
 
     // LEC-DETAIL-001

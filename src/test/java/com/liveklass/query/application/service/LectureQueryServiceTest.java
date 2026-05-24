@@ -5,6 +5,7 @@ import com.liveklass.query.application.dto.LectureDetailResponse;
 import com.liveklass.query.application.dto.LectureSummaryResponse;
 import com.liveklass.query.domain.repository.LectureQueryRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,14 +49,38 @@ class LectureQueryServiceTest {
                 LocalDateTime.of(2026, 5, 25, 10, 0),
                 LocalDateTime.of(2026, 6, 1, 10, 0),
                 LocalDateTime.of(2026, 6, 30, 10, 0),
-                LectureStatus.OPEN
+                LectureStatus.OPEN,
+                5L,
+                3L,
+                2L,
+                true,
+                false
         )), PageRequest.of(0, 20), 1);
-        when(lectureQueryRepository.findLectureSummaries(PageRequest.of(0, 20))).thenReturn(responses);
+        when(lectureQueryRepository.findLectureSummariesByStatuses(
+                List.of(LectureStatus.OPEN),
+                PageRequest.of(0, 20)
+        )).thenReturn(responses);
 
-        Page<LectureSummaryResponse> result = lectureQueryService.getLectures(0, 20);
+        Page<LectureSummaryResponse> result = lectureQueryService.getLectures(List.of(LectureStatus.OPEN), 0, 20);
 
         assertThat(result).isEqualTo(responses);
-        verify(lectureQueryRepository).findLectureSummaries(PageRequest.of(0, 20));
+        verify(lectureQueryRepository).findLectureSummariesByStatuses(List.of(LectureStatus.OPEN), PageRequest.of(0, 20));
+    }
+
+    @Test
+    // LEC-LIST-002
+    // 상태 필터가 없으면 전체 상태를 기본 필터로 사용해 조회하는지 검증한다.
+    void getLectures_withoutStatuses_usesAllStatuses() {
+        Page<LectureSummaryResponse> responses = Page.empty(PageRequest.of(0, 20));
+        List<LectureStatus> allStatuses = List.of(LectureStatus.values());
+
+        when(lectureQueryRepository.findLectureSummariesByStatuses(allStatuses, PageRequest.of(0, 20)))
+                .thenReturn(responses);
+
+        Page<LectureSummaryResponse> result = lectureQueryService.getLectures(null, 0, 20);
+
+        assertThat(result).isEqualTo(responses);
+        verify(lectureQueryRepository).findLectureSummariesByStatuses(allStatuses, PageRequest.of(0, 20));
     }
 
     @Test

@@ -1,8 +1,11 @@
 package com.liveklass.query.application.service;
 
+import com.liveklass.command.domain.enumeration.LectureStatus;
 import com.liveklass.query.application.dto.LectureDetailResponse;
 import com.liveklass.query.application.dto.LectureSummaryResponse;
 import com.liveklass.query.domain.repository.LectureQueryRepository;
+import java.util.EnumSet;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,8 +19,12 @@ public class LectureQueryService {
 
     private final LectureQueryRepository lectureQueryRepository;
 
-    public Page<LectureSummaryResponse> getLectures(int page, int size) {
-        return lectureQueryRepository.findLectureSummaries(PageRequest.of(page, size));
+    public Page<LectureSummaryResponse> getLectures(List<LectureStatus> statuses, int page, int size) {
+        List<LectureStatus> effectiveStatuses = (statuses == null || statuses.isEmpty())
+                ? List.copyOf(EnumSet.allOf(LectureStatus.class))
+                : statuses;
+
+        return lectureQueryRepository.findLectureSummariesByStatuses(effectiveStatuses, PageRequest.of(page, size));
     }
 
     public LectureDetailResponse getLectureDetail(Long lectureId) {

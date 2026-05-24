@@ -20,7 +20,7 @@
 | Command | `POST` | `/api/command/lectures/{lectureId}/enrollments` | 필수 | 없음 | `ApplyEnrollmentResponse` |
 | Command | `POST` | `/api/command/enrollments/{enrollmentId}/confirm-payment` | 필수 | 없음 | `ConfirmPaymentResponse` |
 | Command | `POST` | `/api/command/enrollments/{enrollmentId}/cancel` | 필수 | 없음 | `CancelEnrollmentResponse` |
-| Query | `GET` | `/api/query/lectures?page={page}&size={size}` | 없음 | 없음 | `Page<LectureSummaryResponse>` |
+| Query | `GET` | `/api/query/lectures?statuses={status1,status2}&page={page}&size={size}` | 없음 | `statuses`(optional), `page`, `size` | `Page<LectureSummaryResponse>` |
 | Query | `GET` | `/api/query/lectures/{lectureId}` | 없음 | 없음 | `LectureDetailResponse` |
 | Query | `GET` | `/api/query/enrollments/me?page={page}&size={size}` | 필수 | 없음 | `Page<MyEnrollmentResponse>` |
 | Query | `GET` | `/api/query/lectures/{lectureId}/students` | 없음 | 없음 | `LectureStudentResponse[]` |
@@ -177,7 +177,7 @@ userId: 2
 요청:
 
 ```http
-GET /api/query/lectures?page=0&size=20
+GET /api/query/lectures?statuses=OPEN,CLOSED&page=0&size=20
 ```
 
 응답:
@@ -196,7 +196,12 @@ GET /api/query/lectures?page=0&size=20
       "recruitmentEndAt": "2026-05-31T23:59:59",
       "lectureStartAt": "2026-06-02T19:00:00",
       "lectureEndAt": "2026-06-30T21:00:00",
-      "status": "OPEN"
+      "status": "OPEN",
+      "occupiedCount": 12,
+      "confirmedCount": 8,
+      "waitlistedCount": 4,
+      "canApply": true,
+      "canWaitlist": false
     }
   ],
   "number": 0,

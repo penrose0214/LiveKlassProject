@@ -190,12 +190,13 @@ Spring Security는 기본 인증 흐름 대신 모든 요청을 허용하도록 
 | Command | `POST` | `/api/command/lectures/{lectureId}/enrollments` |
 | Command | `POST` | `/api/command/enrollments/{enrollmentId}/confirm-payment` |
 | Command | `POST` | `/api/command/enrollments/{enrollmentId}/cancel` |
-| Query | `GET` | `/api/query/lectures?page={page}&size={size}` |
+| Query | `GET` | `/api/query/lectures?statuses={status1,status2}&page={page}&size={size}` |
 | Query | `GET` | `/api/query/lectures/{lectureId}` |
 | Query | `GET` | `/api/query/enrollments/me?page={page}&size={size}` |
 | Query | `GET` | `/api/query/lectures/{lectureId}/students` |
 
 샘플 요청과 응답 역시 [guide/api.md](guide/api.md)에 포함되어 있습니다.
+강의 목록 조회의 `statuses` 파라미터는 선택값이며, 전달하지 않으면 전체 상태를 대상으로 조회합니다. 여러 상태를 함께 조회할 때는 `OPEN,CLOSED`와 같이 쉼표로 구분합니다.
 
 ## 데이터 모델 설명
 

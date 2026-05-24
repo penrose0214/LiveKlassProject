@@ -76,7 +76,7 @@ class EnrollmentQueryControllerTest {
                 EnrollmentStatus.CONFIRMED,
                 LocalDateTime.of(2026, 5, 24, 10, 0),
                 LocalDateTime.of(2026, 5, 24, 11, 0)
-        ));
+        )));
 
         mockMvc.perform(get("/api/query/lectures/20/students"))
                 .andExpect(status().isOk())
