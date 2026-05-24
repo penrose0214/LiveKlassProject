@@ -104,4 +104,28 @@ public class Lecture extends BaseTimeEntity {
                 LectureStatus.DRAFT
         );
     }
+
+    public void updateDetails(
+            String title,
+            String description,
+            Long price,
+            Integer capacity,
+            LocalDateTime recruitmentStartAt,
+            LocalDateTime recruitmentEndAt,
+            LocalDateTime lectureStartAt,
+            LocalDateTime lectureEndAt
+    ) {
+        this.title = title;
+        this.description = description;
+        this.price = price;
+        this.capacity = capacity;
+        this.recruitmentStartAt = recruitmentStartAt;
+        this.recruitmentEndAt = recruitmentEndAt;
+        this.lectureStartAt = lectureStartAt;
+        this.lectureEndAt = lectureEndAt;
+    }
+
+    public void changeStatus(LectureStatus status) {
+        this.status = status;
+    }
 }
