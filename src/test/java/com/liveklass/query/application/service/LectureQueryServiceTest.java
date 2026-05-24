@@ -5,13 +5,15 @@ import com.liveklass.query.application.dto.LectureDetailResponse;
 import com.liveklass.query.application.dto.LectureSummaryResponse;
 import com.liveklass.query.domain.repository.LectureQueryRepository;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -35,7 +37,7 @@ class LectureQueryServiceTest {
     // LEC-LIST-001, LEC-LIST-002
     // 강의 목록 조회 시 리포지토리 결과를 그대로 반환하는지 검증한다.
     void getLectures_returnsRepositoryResult() {
-        List<LectureSummaryResponse> responses = List.of(new LectureSummaryResponse(
+        Page<LectureSummaryResponse> responses = new PageImpl<>(java.util.List.of(new LectureSummaryResponse(
                 1L,
                 2L,
                 "creator",
@@ -47,13 +49,13 @@ class LectureQueryServiceTest {
                 LocalDateTime.of(2026, 6, 1, 10, 0),
                 LocalDateTime.of(2026, 6, 30, 10, 0),
                 LectureStatus.OPEN
-        ));
-        when(lectureQueryRepository.findLectureSummaries()).thenReturn(responses);
+        )), PageRequest.of(0, 20), 1);
+        when(lectureQueryRepository.findLectureSummaries(PageRequest.of(0, 20))).thenReturn(responses);
 
-        List<LectureSummaryResponse> result = lectureQueryService.getLectures();
+        Page<LectureSummaryResponse> result = lectureQueryService.getLectures(0, 20);
 
         assertThat(result).isEqualTo(responses);
-        verify(lectureQueryRepository).findLectureSummaries();
+        verify(lectureQueryRepository).findLectureSummaries(PageRequest.of(0, 20));
     }
 
     @Test

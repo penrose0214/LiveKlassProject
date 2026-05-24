@@ -3,8 +3,9 @@ package com.liveklass.query.domain.repository;
 import com.liveklass.command.domain.entity.Lecture;
 import com.liveklass.query.application.dto.LectureDetailResponse;
 import com.liveklass.query.application.dto.LectureSummaryResponse;
-import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -28,7 +29,7 @@ public interface LectureQueryRepository extends Repository<Lecture, Long> {
             from Lecture l
             order by l.id desc
             """)
-    List<LectureSummaryResponse> findLectureSummaries();
+    Page<LectureSummaryResponse> findLectureSummaries(Pageable pageable);
 
     @Query("""
             select new com.liveklass.query.application.dto.LectureDetailResponse(

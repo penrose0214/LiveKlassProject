@@ -3,8 +3,9 @@ package com.liveklass.query.application.service;
 import com.liveklass.query.application.dto.LectureDetailResponse;
 import com.liveklass.query.application.dto.LectureSummaryResponse;
 import com.liveklass.query.domain.repository.LectureQueryRepository;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,8 +16,8 @@ public class LectureQueryService {
 
     private final LectureQueryRepository lectureQueryRepository;
 
-    public List<LectureSummaryResponse> getLectures() {
-        return lectureQueryRepository.findLectureSummaries();
+    public Page<LectureSummaryResponse> getLectures(int page, int size) {
+        return lectureQueryRepository.findLectureSummaries(PageRequest.of(page, size));
     }
 
     public LectureDetailResponse getLectureDetail(Long lectureId) {

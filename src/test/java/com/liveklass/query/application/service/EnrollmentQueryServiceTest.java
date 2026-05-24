@@ -5,12 +5,14 @@ import com.liveklass.query.application.dto.LectureStudentResponse;
 import com.liveklass.query.application.dto.MyEnrollmentResponse;
 import com.liveklass.query.domain.repository.EnrollmentQueryRepository;
 import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -33,7 +35,7 @@ class EnrollmentQueryServiceTest {
     // ENR-LIST-001
     // 내 수강 신청 목록 조회 시 리포지토리 결과를 그대로 반환하는지 검증한다.
     void getMyEnrollments_returnsRepositoryResult() {
-        List<MyEnrollmentResponse> responses = List.of(new MyEnrollmentResponse(
+        Page<MyEnrollmentResponse> responses = new PageImpl<>(java.util.List.of(new MyEnrollmentResponse(
                 10L,
                 20L,
                 "lecture",
@@ -47,20 +49,20 @@ class EnrollmentQueryServiceTest {
                 null,
                 LocalDateTime.of(2026, 6, 1, 10, 0),
                 LocalDateTime.of(2026, 6, 30, 10, 0)
-        ));
-        when(enrollmentQueryRepository.findMyEnrollments(1L)).thenReturn(responses);
+        )), PageRequest.of(0, 20), 1);
+        when(enrollmentQueryRepository.findMyEnrollments(1L, PageRequest.of(0, 20))).thenReturn(responses);
 
-        List<MyEnrollmentResponse> result = enrollmentQueryService.getMyEnrollments(1L);
+        Page<MyEnrollmentResponse> result = enrollmentQueryService.getMyEnrollments(1L, 0, 20);
 
         assertThat(result).isEqualTo(responses);
-        verify(enrollmentQueryRepository).findMyEnrollments(1L);
+        verify(enrollmentQueryRepository).findMyEnrollments(1L, PageRequest.of(0, 20));
     }
 
     @Test
     // LEC-DETAIL-002
     // 강의별 수강생 목록 조회 시 리포지토리 결과를 그대로 반환하는지 검증한다.
     void getLectureStudents_returnsRepositoryResult() {
-        List<LectureStudentResponse> responses = List.of(new LectureStudentResponse(
+        java.util.List<LectureStudentResponse> responses = java.util.List.of(new LectureStudentResponse(
                 10L,
                 1L,
                 "student",

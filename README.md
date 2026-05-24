@@ -190,9 +190,9 @@ Spring Security는 기본 인증 흐름 대신 모든 요청을 허용하도록 
 | Command | `POST` | `/api/command/lectures/{lectureId}/enrollments` |
 | Command | `POST` | `/api/command/enrollments/{enrollmentId}/confirm-payment` |
 | Command | `POST` | `/api/command/enrollments/{enrollmentId}/cancel` |
-| Query | `GET` | `/api/query/lectures` |
+| Query | `GET` | `/api/query/lectures?page={page}&size={size}` |
 | Query | `GET` | `/api/query/lectures/{lectureId}` |
-| Query | `GET` | `/api/query/enrollments/me` |
+| Query | `GET` | `/api/query/enrollments/me?page={page}&size={size}` |
 | Query | `GET` | `/api/query/lectures/{lectureId}/students` |
 
 샘플 요청과 응답 역시 [guide/api.md](guide/api.md)에 포함되어 있습니다.

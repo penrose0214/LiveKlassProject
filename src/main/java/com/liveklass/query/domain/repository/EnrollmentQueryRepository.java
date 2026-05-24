@@ -4,6 +4,8 @@ import com.liveklass.command.domain.entity.Enrollment;
 import com.liveklass.query.application.dto.LectureStudentResponse;
 import com.liveklass.query.application.dto.MyEnrollmentResponse;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -31,7 +33,7 @@ public interface EnrollmentQueryRepository extends Repository<Enrollment, Long> 
             where e.user.id = :userId
             order by e.appliedAt desc, e.id desc
             """)
-    List<MyEnrollmentResponse> findMyEnrollments(@Param("userId") Long userId);
+    Page<MyEnrollmentResponse> findMyEnrollments(@Param("userId") Long userId, Pageable pageable);
 
     @Query("""
             select new com.liveklass.query.application.dto.LectureStudentResponse(
