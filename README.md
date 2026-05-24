@@ -84,7 +84,7 @@ JWT_REFRESH_EXP=1000000000
 
 ### 결제 마감
 
-- 현재 구현은 `paymentDueAt`를 단순히 `now.plusDays(1)`로 설정합니다.
+- 현재 구현은 `paymentDueAt`를 `min(신청 시각 + 24시간, 모집 마감 시각)` 규칙으로 설정합니다.
 - 요구사항의 “24시간 후와 모집 마감일 중 더 이른 시각” 계산은 아직 미구현 상태입니다.
 - `payment timeout` 자동 취소 역시 아직 미구현 상태입니다.
 
@@ -193,7 +193,7 @@ Spring Security는 기본 인증 흐름 대신 모든 요청을 허용하도록 
 | Query | `GET` | `/api/query/lectures?statuses={status1,status2}&page={page}&size={size}` |
 | Query | `GET` | `/api/query/lectures/{lectureId}` |
 | Query | `GET` | `/api/query/enrollments/me?page={page}&size={size}` |
-| Query | `GET` | `/api/query/lectures/{lectureId}/students` |
+| Query | `GET` | `/api/query/lectures/{lectureId}/students?statuses={status1,status2}` |
 
 샘플 요청과 응답 역시 [guide/api.md](guide/api.md)에 포함되어 있습니다.
 강의 목록 조회의 `statuses` 파라미터는 선택값이며, 전달하지 않으면 전체 상태를 대상으로 조회합니다. 여러 상태를 함께 조회할 때는 `OPEN,CLOSED`와 같이 쉼표로 구분합니다.

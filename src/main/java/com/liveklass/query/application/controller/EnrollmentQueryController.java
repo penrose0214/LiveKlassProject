@@ -1,5 +1,6 @@
 package com.liveklass.query.application.controller;
 
+import com.liveklass.command.domain.enumeration.EnrollmentStatus;
 import com.liveklass.query.application.dto.LectureStudentResponse;
 import com.liveklass.query.application.dto.MyEnrollmentResponse;
 import com.liveklass.query.application.service.EnrollmentQueryService;
@@ -34,7 +35,11 @@ public class EnrollmentQueryController {
 
     //
     @GetMapping("/lectures/{lectureId}/students")
-    public ResponseEntity<List<LectureStudentResponse>> getLectureStudents(@PathVariable Long lectureId) {
-        return ResponseEntity.ok(enrollmentQueryService.getLectureStudents(lectureId));
+    public ResponseEntity<List<LectureStudentResponse>> getLectureStudents(
+            @RequestHeader("userId") Long userId,
+            @PathVariable Long lectureId,
+            @RequestParam(required = false) List<EnrollmentStatus> statuses
+    ) {
+        return ResponseEntity.ok(enrollmentQueryService.getLectureStudents(userId, lectureId, statuses));
     }
 }

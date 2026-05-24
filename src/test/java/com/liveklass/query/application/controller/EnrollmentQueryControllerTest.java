@@ -5,6 +5,7 @@ import com.liveklass.query.application.dto.LectureStudentResponse;
 import com.liveklass.query.application.dto.MyEnrollmentResponse;
 import com.liveklass.query.application.service.EnrollmentQueryService;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -67,9 +68,10 @@ class EnrollmentQueryControllerTest {
 
     @Test
     // LEC-DETAIL-002
-    // lectureId 경로값으로 강의별 수강생 목록 조회 요청 시 수강생 목록을 JSON 배열로 반환하는지 검증한다.
+    // userId 헤더와 상태 필터로 강의별 수강생 목록 조회 요청 시 수강생 목록을 JSON 배열로 반환하는지 검증한다.
     void getLectureStudents_returnsList() throws Exception {
-        when(enrollmentQueryService.getLectureStudents(20L)).thenReturn(java.util.List.of(new LectureStudentResponse(
+        when(enrollmentQueryService.getLectureStudents(1L, 20L, List.of(EnrollmentStatus.PENDING, EnrollmentStatus.CONFIRMED)))
+                .thenReturn(java.util.List.of(new LectureStudentResponse(
                 10L,
                 1L,
                 "student",
@@ -78,11 +80,13 @@ class EnrollmentQueryControllerTest {
                 LocalDateTime.of(2026, 5, 24, 11, 0)
         )));
 
-        mockMvc.perform(get("/api/query/lectures/20/students"))
+        mockMvc.perform(get("/api/query/lectures/20/students")
+                        .header("userId", 1L)
+                        .param("statuses", "PENDING,CONFIRMED"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].userId").value(1L))
                 .andExpect(jsonPath("$[0].status").value("CONFIRMED"));
 
-        verify(enrollmentQueryService).getLectureStudents(20L);
+        verify(enrollmentQueryService).getLectureStudents(1L, 20L, List.of(EnrollmentStatus.PENDING, EnrollmentStatus.CONFIRMED));
     }
 }

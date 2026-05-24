@@ -22,6 +22,16 @@ public class LectureCommandService {
     private final EntityManager entityManager;
 
     public void createLecture(Long userId, CreateLectureRequest request) {
+        lecturePolicy.validateLectureDetails(
+                request.title(),
+                request.description(),
+                request.price(),
+                request.capacity(),
+                request.recruitmentStartAt(),
+                request.recruitmentEndAt(),
+                request.lectureStartAt(),
+                request.lectureEndAt()
+        );
         AppUser creator = entityManager.getReference(AppUser.class, userId);
         Lecture lecture = Lecture.draft(
                 creator,
@@ -44,6 +54,16 @@ public class LectureCommandService {
         if (lecture.getStatus() == LectureStatus.CLOSED) {
             throw new IllegalArgumentException("CLOSED 상태 강의는 수정할 수 없습니다.");
         }
+        lecturePolicy.validateLectureDetails(
+                request.title(),
+                request.description(),
+                request.price(),
+                request.capacity(),
+                request.recruitmentStartAt(),
+                request.recruitmentEndAt(),
+                request.lectureStartAt(),
+                request.lectureEndAt()
+        );
         lecture.updateDetails(
                 request.title(),
                 request.description(),

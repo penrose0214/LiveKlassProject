@@ -1,8 +1,10 @@
 package com.liveklass.query.domain.repository;
 
 import com.liveklass.command.domain.entity.Enrollment;
+import com.liveklass.command.domain.enumeration.EnrollmentStatus;
 import com.liveklass.query.application.dto.LectureStudentResponse;
 import com.liveklass.query.application.dto.MyEnrollmentResponse;
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,8 +48,15 @@ public interface EnrollmentQueryRepository extends Repository<Enrollment, Long> 
             )
             from Enrollment e
             where e.lecture.id = :lectureId
-              and e.status = com.liveklass.command.domain.enumeration.EnrollmentStatus.CONFIRMED
-            order by e.confirmedAt asc, e.id asc
+              and e.status in :statuses
+            order by
+                case when e.confirmedAt is null then 1 else 0 end,
+                e.confirmedAt asc,
+                e.appliedAt asc,
+                e.id asc
             """)
-    List<LectureStudentResponse> findConfirmedStudentsByLecture(@Param("lectureId") Long lectureId);
+    List<LectureStudentResponse> findStudentsByLectureAndStatuses(
+            @Param("lectureId") Long lectureId,
+            @Param("statuses") Collection<EnrollmentStatus> statuses
+    );
 }

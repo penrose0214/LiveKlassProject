@@ -23,7 +23,7 @@
 | Query | `GET` | `/api/query/lectures?statuses={status1,status2}&page={page}&size={size}` | 없음 | `statuses`(optional), `page`, `size` | `Page<LectureSummaryResponse>` |
 | Query | `GET` | `/api/query/lectures/{lectureId}` | 없음 | 없음 | `LectureDetailResponse` |
 | Query | `GET` | `/api/query/enrollments/me?page={page}&size={size}` | 필수 | 없음 | `Page<MyEnrollmentResponse>` |
-| Query | `GET` | `/api/query/lectures/{lectureId}/students` | 없음 | 없음 | `LectureStudentResponse[]` |
+| Query | `GET` | `/api/query/lectures/{lectureId}/students` | `userId` | `statuses`(optional) | `LectureStudentResponse[]` |
 
 ## DTO 요약
 
@@ -283,7 +283,8 @@ userId: 2
 요청:
 
 ```http
-GET /api/query/lectures/10/students
+GET /api/query/lectures/10/students?statuses=PENDING,CONFIRMED
+userId: 1
 ```
 
 응답:
