@@ -164,6 +164,8 @@ Spring Security는 기본 인증 흐름 대신 모든 요청을 허용하도록 
 - JUnit과 Mockito를 활용한 `ServiceTest`, `ControllerTest` 작성 보조
 - 상태 다이어그램의 모든 전이를 검증하는 `StateTransitionSimulationBasedTest` 작성 보조
 - 정원 초과 시나리오를 바탕으로 대기열 적재를 검증하는 `EnrollmentConcurrencySimulationBasedTest` 작성 보조
+- PostgreSQL 기반 `IntegratedTest` 작성 보조
+- 통합 테스트용 SQL 더미 데이터 및 정리 스크립트 작성 보조
 - README, API 문서, UML 보조 문서 정리 보조
 
 ### 최종 책임 범위
@@ -259,6 +261,20 @@ ERDCloud로 작성한 현재 스키마는 아래 이미지와 같습니다.
 - `ServiceTest`: JUnit 5 + Mockito 기반입니다.
 - `StateTransitionSimulationBasedTest`: 상태 전이 시뮬레이션 검증용 테스트입니다.
 
+### 통합 테스트
+
+실제 PostgreSQL에 연결하여 동작을 검증하는 통합 테스트도 포함되어 있습니다.
+
+- `LectureQueryIntegratedTest`: 강의 목록/상세 조회 검증
+- `EnrollmentQueryIntegratedTest`: 강의별 수강생 조회 검증
+- `EnrollmentCommandIntegratedTest`: 수강 신청 및 `paymentDueAt` 반영 검증
+
+예시는 다음과 같습니다.
+
+```bash
+./gradlew test --tests "com.liveklass.integration.*"
+```
+
 ### 동시성 검증 테스트
 
 동시성 테스트는 실제 DB와 트랜잭션, 락이 필요하므로 PostgreSQL 연결이 살아 있어야 합니다.
@@ -272,4 +288,7 @@ ERDCloud로 작성한 현재 스키마는 아래 이미지와 같습니다.
 주의사항은 다음과 같습니다.
 
 - 현재 환경에서는 Gradle wrapper 다운로드 또는 네트워크 제약에 따라 실행이 제한될 수 있습니다.
-- PostgreSQL 연결 정보가 없으면 통합 성격의 테스트는 실패합니다.
+- PostgreSQL 연결 정보가 없으면 통합 테스트와 동시성 테스트는 실패합니다.
+- 통합 테스트와 동시성 테스트는 실제 DB 스키마를 기준으로 동작하므로, 엔티티 매핑을 변경한 뒤에는 현재 테스트 DB 스키마가 코드와 일치하는지 확인해야 합니다.
+- `application.yml`의 JPA DDL 설정을 `update`로만 두고 기존 스키마를 재사용하면, 컬럼 정의 변경이 충분히 반영되지 않아 테스트가 실패할 수 있습니다.
+- 통합 테스트용 더미 데이터는 `src/test/resources/sql` 경로의 SQL 스크립트로 직접 적재되므로, 테스트 대상 DB에 동일한 테이블 구조가 먼저 준비되어 있어야 합니다.
