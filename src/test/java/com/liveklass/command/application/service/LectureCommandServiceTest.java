@@ -42,6 +42,8 @@ class LectureCommandServiceTest {
     }
 
     @Test
+    // LEC-REG-001
+    // 강의 등록 시 작성자 참조와 요청값으로 DRAFT 상태의 강의를 생성해 저장하는지 검증한다.
     void createLecture_savesDraftLecture() {
         AppUser creator = new AppUser("creator");
         ReflectionTestUtils.setField(creator, "id", 1L);
@@ -68,6 +70,8 @@ class LectureCommandServiceTest {
     }
 
     @Test
+    // ACC-AUTHZ-001
+    // 강의 수정 시 작성자 검증을 수행하고 요청값으로 강의 정보가 변경되는지 검증한다.
     void updateLecture_updatesLectureFields() {
         Lecture lecture = lectureWithStatus(LectureStatus.DRAFT);
         UpdateLectureRequest request = new UpdateLectureRequest(
@@ -90,6 +94,8 @@ class LectureCommandServiceTest {
     }
 
     @Test
+    // LEC-STAT-001, LEC-STAT-003, ACC-AUTHZ-001
+    // 강의 OPEN 처리 시 작성자와 상태 전이 가능 여부를 검증한 뒤 상태를 OPEN으로 변경하는지 검증한다.
     void openLecture_changesStatusToOpen() {
         Lecture lecture = lectureWithStatus(LectureStatus.DRAFT);
         when(lectureRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(lecture));
@@ -102,6 +108,8 @@ class LectureCommandServiceTest {
     }
 
     @Test
+    // LEC-STAT-002, LEC-STAT-003, ACC-AUTHZ-001
+    // 강의 CLOSED 처리 시 작성자와 상태 전이 가능 여부를 검증한 뒤 상태를 CLOSED로 변경하는지 검증한다.
     void closeLecture_changesStatusToClosed() {
         Lecture lecture = lectureWithStatus(LectureStatus.OPEN);
         when(lectureRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(lecture));

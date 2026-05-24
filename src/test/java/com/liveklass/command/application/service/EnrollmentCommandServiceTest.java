@@ -72,6 +72,8 @@ class EnrollmentCommandServiceTest {
     }
 
     @Test
+    // ENR-APPLY-001, ENR-PAY-001, CAP-RULE-001, CAP-RULE-002, CAP-CONC-001, CAP-CONC-002
+    // 잔여 좌석이 있을 때 수강 신청을 PENDING으로 생성하고 결제 마감 시각을 설정하는지 검증한다.
     void apply_whenSeatAvailable_createsPendingEnrollment() {
         Lecture lecture = openLecture();
         AppUser applicant = user(2L, "student");
@@ -98,6 +100,8 @@ class EnrollmentCommandServiceTest {
     }
 
     @Test
+    // ENR-APPLY-001, ENR-WAIT-001, CAP-RULE-001, CAP-RULE-002, CAP-CONC-001, CAP-CONC-002
+    // 정원이 가득 찼을 때 수강 신청을 실패시키지 않고 WAITLISTED로 생성하는지 검증한다.
     void apply_whenFull_createsWaitlistedEnrollment() {
         Lecture lecture = openLecture();
         AppUser applicant = user(2L, "student");
@@ -119,6 +123,8 @@ class EnrollmentCommandServiceTest {
     }
 
     @Test
+    // ENR-APPLY-003, CAP-RULE-002
+    // 동일 강의에 활성 신청이 이미 존재하면 중복 신청을 거부하는지 검증한다.
     void apply_whenDuplicateEnrollmentExists_throws() {
         Lecture lecture = openLecture();
         when(lectureRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(lecture));
@@ -130,6 +136,8 @@ class EnrollmentCommandServiceTest {
     }
 
     @Test
+    // ENR-PAY-002
+    // PENDING 신청의 결제 확정 시 상태를 CONFIRMED로 바꾸고 confirmedAt을 기록하는지 검증한다.
     void confirmPayment_confirmsEnrollment() {
         Enrollment enrollment = pendingEnrollment(openLecture(), user(2L, "student"));
         ReflectionTestUtils.setField(enrollment, "id", 200L);
@@ -144,6 +152,8 @@ class EnrollmentCommandServiceTest {
     }
 
     @Test
+    // ENR-CANCEL-001, ENR-WAIT-002, CAP-CONC-001
+    // 좌석을 점유하던 신청이 취소되면 대기열 첫 번째 신청을 PENDING으로 승격하는지 검증한다.
     void cancel_whenSeatReleased_promotesFirstWaitlisted() {
         Lecture lecture = openLecture();
         Enrollment target = pendingEnrollment(lecture, user(2L, "student"));
@@ -166,6 +176,8 @@ class EnrollmentCommandServiceTest {
     }
 
     @Test
+    // ENR-CANCEL-001
+    // 좌석을 점유하지 않던 신청 취소 시에는 대기열 승격이 발생하지 않는지 검증한다.
     void cancel_whenSeatNotReleased_doesNotPromoteWaitlist() {
         Lecture lecture = openLecture();
         Enrollment target = waitlistedEnrollment(lecture, user(2L, "student"));
