@@ -20,10 +20,10 @@
 | Command | `POST` | `/api/command/lectures/{lectureId}/enrollments` | 필수 | 없음 | `ApplyEnrollmentResponse` |
 | Command | `POST` | `/api/command/enrollments/{enrollmentId}/confirm-payment` | 필수 | 없음 | `ConfirmPaymentResponse` |
 | Command | `POST` | `/api/command/enrollments/{enrollmentId}/cancel` | 필수 | 없음 | `CancelEnrollmentResponse` |
-| Query | `GET` | `/api/query/lectures` | 없음 | 없음 | `LectureSummaryResponse[]` |
+| Query | `GET` | `/api/query/lectures?statuses={status1,status2}&page={page}&size={size}` | 없음 | `statuses`(optional), `page`, `size` | `Page<LectureSummaryResponse>` |
 | Query | `GET` | `/api/query/lectures/{lectureId}` | 없음 | 없음 | `LectureDetailResponse` |
-| Query | `GET` | `/api/query/enrollments/me` | 필수 | 없음 | `MyEnrollmentResponse[]` |
-| Query | `GET` | `/api/query/lectures/{lectureId}/students` | 없음 | 없음 | `LectureStudentResponse[]` |
+| Query | `GET` | `/api/query/enrollments/me?page={page}&size={size}` | 필수 | 없음 | `Page<MyEnrollmentResponse>` |
+| Query | `GET` | `/api/query/lectures/{lectureId}/students` | `userId` | `statuses`(optional) | `LectureStudentResponse[]` |
 
 ## DTO 요약
 
@@ -177,27 +177,38 @@ userId: 2
 요청:
 
 ```http
-GET /api/query/lectures
+GET /api/query/lectures?statuses=OPEN,CLOSED&page=0&size=20
 ```
 
 응답:
 
 ```json
-[
-  {
-    "lectureId": 10,
-    "creatorId": 1,
-    "creatorName": "creator",
-    "title": "Spring Boot 입문",
-    "price": 30000,
-    "capacity": 30,
-    "recruitmentStartAt": "2026-05-24T10:00:00",
-    "recruitmentEndAt": "2026-05-31T23:59:59",
-    "lectureStartAt": "2026-06-02T19:00:00",
-    "lectureEndAt": "2026-06-30T21:00:00",
-    "status": "OPEN"
-  }
-]
+{
+  "content": [
+    {
+      "lectureId": 10,
+      "creatorId": 1,
+      "creatorName": "creator",
+      "title": "Spring Boot 입문",
+      "price": 30000,
+      "capacity": 30,
+      "recruitmentStartAt": "2026-05-24T10:00:00",
+      "recruitmentEndAt": "2026-05-31T23:59:59",
+      "lectureStartAt": "2026-06-02T19:00:00",
+      "lectureEndAt": "2026-06-30T21:00:00",
+      "status": "OPEN",
+      "occupiedCount": 12,
+      "confirmedCount": 8,
+      "waitlistedCount": 4,
+      "canApply": true,
+      "canWaitlist": false
+    }
+  ],
+  "number": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1
+}
 ```
 
 ### 7. 강의 상세 조회
@@ -235,30 +246,36 @@ GET /api/query/lectures/10
 요청:
 
 ```http
-GET /api/query/enrollments/me
+GET /api/query/enrollments/me?page=0&size=20
 userId: 2
 ```
 
 응답:
 
 ```json
-[
-  {
-    "enrollmentId": 100,
-    "lectureId": 10,
-    "lectureTitle": "Spring Boot 입문",
-    "creatorName": "creator",
-    "lectureStatus": "OPEN",
-    "enrollmentStatus": "PENDING",
-    "price": 30000,
-    "appliedAt": "2026-05-24T15:00:00",
-    "paymentDueAt": "2026-05-25T15:00:00",
-    "confirmedAt": null,
-    "cancelledAt": null,
-    "lectureStartAt": "2026-06-02T19:00:00",
-    "lectureEndAt": "2026-06-30T21:00:00"
-  }
-]
+{
+  "content": [
+    {
+      "enrollmentId": 100,
+      "lectureId": 10,
+      "lectureTitle": "Spring Boot 입문",
+      "creatorName": "creator",
+      "lectureStatus": "OPEN",
+      "enrollmentStatus": "PENDING",
+      "price": 30000,
+      "appliedAt": "2026-05-24T15:00:00",
+      "paymentDueAt": "2026-05-25T15:00:00",
+      "confirmedAt": null,
+      "cancelledAt": null,
+      "lectureStartAt": "2026-06-02T19:00:00",
+      "lectureEndAt": "2026-06-30T21:00:00"
+    }
+  ],
+  "number": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1
+}
 ```
 
 ### 9. 강의별 수강생 목록 조회
@@ -266,7 +283,8 @@ userId: 2
 요청:
 
 ```http
-GET /api/query/lectures/10/students
+GET /api/query/lectures/10/students?statuses=PENDING,CONFIRMED
+userId: 1
 ```
 
 응답:

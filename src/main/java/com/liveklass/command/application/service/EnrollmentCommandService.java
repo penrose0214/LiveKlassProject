@@ -63,7 +63,7 @@ public class EnrollmentCommandService {
 
         Enrollment enrollment;
         if (capacityPolicy.hasAvailableSeat(lecture, enrollValidation.occupiedCount())) {
-            enrollment = Enrollment.pending(lecture, user, now, now.plusDays(1));
+            enrollment = Enrollment.pending(lecture, user, now, calculatePaymentDueAt(lecture, now));
         } else {
             enrollment = Enrollment.waitlisted(lecture, user, now);
         }
@@ -134,6 +134,15 @@ public class EnrollmentCommandService {
 
         Enrollment firstWaitlisted = waitlisted.get(0);
         waitlistPolicy.validateWaitlisted(firstWaitlisted);
-        firstWaitlisted.promoteToPending(now.plusDays(1));
+        firstWaitlisted.promoteToPending(calculatePaymentDueAt(lecture, now));
+    }
+
+    private LocalDateTime calculatePaymentDueAt(Lecture lecture, LocalDateTime baseTime) {
+        LocalDateTime twentyFourHoursLater = baseTime.plusHours(24);
+        return earlierOf(twentyFourHoursLater, lecture.getRecruitmentEndAt());
+    }
+
+    private LocalDateTime earlierOf(LocalDateTime first, LocalDateTime second) {
+        return first.isBefore(second) ? first : second;
     }
 }

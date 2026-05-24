@@ -6,6 +6,7 @@ import com.liveklass.command.application.dto.UpdateLectureRequest;
 import com.liveklass.command.domain.entity.Lecture;
 import com.liveklass.command.domain.enumeration.LectureStatus;
 import com.liveklass.command.domain.policy.LecturePolicy;
+import com.liveklass.common.exception.DomainValidationException;
 import com.liveklass.command.domain.repository.LectureRepository;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -19,8 +20,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -91,6 +94,31 @@ class LectureCommandServiceTest {
         verify(lecturePolicy).validateCreator(lecture, 1L);
         assertThat(lecture.getTitle()).isEqualTo("new-title");
         assertThat(lecture.getPrice()).isEqualTo(20000L);
+    }
+
+    @Test
+    // LEC-REG-002
+    // 강의 등록 요청값이 유효하지 않으면 저장을 시도하지 않고 예외를 전파하는지 검증한다.
+    void createLecture_whenInvalid_throwsAndDoesNotSave() {
+        AppUser creator = new AppUser("creator");
+        ReflectionTestUtils.setField(creator, "id", 1L);
+        CreateLectureRequest request = new CreateLectureRequest(
+                "",
+                "description",
+                10000L,
+                30,
+                LocalDateTime.of(2026, 5, 24, 10, 0),
+                LocalDateTime.of(2026, 5, 25, 10, 0),
+                LocalDateTime.of(2026, 6, 1, 10, 0),
+                LocalDateTime.of(2026, 6, 30, 10, 0)
+        );
+        when(entityManager.getReference(AppUser.class, 1L)).thenReturn(creator);
+
+        assertThatThrownBy(() -> lectureCommandService.createLecture(1L, request))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining("강의 제목");
+
+        verify(lectureRepository, never()).save(any());
     }
 
     @Test

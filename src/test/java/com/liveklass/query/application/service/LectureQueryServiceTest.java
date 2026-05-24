@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -35,7 +38,7 @@ class LectureQueryServiceTest {
     // LEC-LIST-001, LEC-LIST-002
     // 강의 목록 조회 시 리포지토리 결과를 그대로 반환하는지 검증한다.
     void getLectures_returnsRepositoryResult() {
-        List<LectureSummaryResponse> responses = List.of(new LectureSummaryResponse(
+        Page<LectureSummaryResponse> responses = new PageImpl<>(java.util.List.of(new LectureSummaryResponse(
                 1L,
                 2L,
                 "creator",
@@ -46,14 +49,38 @@ class LectureQueryServiceTest {
                 LocalDateTime.of(2026, 5, 25, 10, 0),
                 LocalDateTime.of(2026, 6, 1, 10, 0),
                 LocalDateTime.of(2026, 6, 30, 10, 0),
-                LectureStatus.OPEN
-        ));
-        when(lectureQueryRepository.findLectureSummaries()).thenReturn(responses);
+                LectureStatus.OPEN,
+                5L,
+                3L,
+                2L,
+                true,
+                false
+        )), PageRequest.of(0, 20), 1);
+        when(lectureQueryRepository.findLectureSummariesByStatuses(
+                List.of(LectureStatus.OPEN),
+                PageRequest.of(0, 20)
+        )).thenReturn(responses);
 
-        List<LectureSummaryResponse> result = lectureQueryService.getLectures();
+        Page<LectureSummaryResponse> result = lectureQueryService.getLectures(List.of(LectureStatus.OPEN), 0, 20);
 
         assertThat(result).isEqualTo(responses);
-        verify(lectureQueryRepository).findLectureSummaries();
+        verify(lectureQueryRepository).findLectureSummariesByStatuses(List.of(LectureStatus.OPEN), PageRequest.of(0, 20));
+    }
+
+    @Test
+    // LEC-LIST-002
+    // 상태 필터가 없으면 전체 상태를 기본 필터로 사용해 조회하는지 검증한다.
+    void getLectures_withoutStatuses_usesAllStatuses() {
+        Page<LectureSummaryResponse> responses = Page.empty(PageRequest.of(0, 20));
+        List<LectureStatus> allStatuses = List.of(LectureStatus.values());
+
+        when(lectureQueryRepository.findLectureSummariesByStatuses(allStatuses, PageRequest.of(0, 20)))
+                .thenReturn(responses);
+
+        Page<LectureSummaryResponse> result = lectureQueryService.getLectures(null, 0, 20);
+
+        assertThat(result).isEqualTo(responses);
+        verify(lectureQueryRepository).findLectureSummariesByStatuses(allStatuses, PageRequest.of(0, 20));
     }
 
     @Test

@@ -74,7 +74,14 @@ class EnrollmentCommandServiceTest {
     // ENR-APPLY-001, ENR-PAY-001, CAP-RULE-001, CAP-RULE-002, CAP-CONC-001, CAP-CONC-002
     // 잔여 좌석이 있을 때 수강 신청을 PENDING으로 생성하고 결제 마감 시각을 설정하는지 검증한다.
     void apply_whenSeatAvailable_createsPendingEnrollment() {
-        Lecture lecture = openLecture();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime recruitmentEndAt = now.plusHours(12);
+        Lecture lecture = openLecture(
+                now.minusHours(1),
+                recruitmentEndAt,
+                now.plusDays(2),
+                now.plusDays(3)
+        );
         AppUser applicant = user(2L, "student");
         when(lectureRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(lecture));
         when(enrollmentRepository.getEnrollValidation(eq(10L), eq(2L), any(), any()))
@@ -93,16 +100,48 @@ class EnrollmentCommandServiceTest {
         verify(enrollmentRepository).save(captor.capture());
         Enrollment saved = captor.getValue();
         assertThat(saved.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
-        assertThat(saved.getPaymentDueAt()).isNotNull();
+        assertThat(saved.getPaymentDueAt()).isEqualTo(recruitmentEndAt);
         assertThat(response.enrollmentId()).isEqualTo(100L);
         assertThat(response.status()).isEqualTo(EnrollmentStatus.PENDING);
+    }
+
+    @Test
+    // ENR-PAY-001
+    // 모집 마감일이 24시간 이후라면 결제 마감 시각을 신청 시각 기준 24시간 후로 설정하는지 검증한다.
+    void apply_whenRecruitmentEndIsLaterThan24Hours_usesTwentyFourHoursLimit() {
+        LocalDateTime now = LocalDateTime.now();
+        Lecture lecture = openLecture(
+                now.minusHours(1),
+                now.plusDays(3),
+                now.plusDays(5),
+                now.plusDays(6)
+        );
+        AppUser applicant = user(2L, "student");
+        when(lectureRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(lecture));
+        when(enrollmentRepository.getEnrollValidation(eq(10L), eq(2L), any(), any()))
+                .thenReturn(new EnrollValidation(1L, false));
+        when(capacityPolicy.hasAvailableSeat(lecture, 1L)).thenReturn(true);
+        when(entityManager.getReference(AppUser.class, 2L)).thenReturn(applicant);
+        when(enrollmentRepository.save(any(Enrollment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ApplyEnrollmentResponse response = enrollmentCommandService.apply(2L, 10L);
+
+        assertThat(response.paymentDueAt()).isNotNull();
+        assertThat(response.paymentDueAt()).isBeforeOrEqualTo(now.plusHours(24).plusSeconds(1));
+        assertThat(response.paymentDueAt()).isAfterOrEqualTo(now.plusHours(24).minusSeconds(1));
     }
 
     @Test
     // ENR-APPLY-001, ENR-WAIT-001, CAP-RULE-001, CAP-RULE-002, CAP-CONC-001, CAP-CONC-002
     // 정원이 가득 찼을 때 수강 신청을 실패시키지 않고 WAITLISTED로 생성하는지 검증한다.
     void apply_whenFull_createsWaitlistedEnrollment() {
-        Lecture lecture = openLecture();
+        LocalDateTime now = LocalDateTime.now();
+        Lecture lecture = openLecture(
+                now.minusHours(1),
+                now.plusHours(12),
+                now.plusDays(2),
+                now.plusDays(3)
+        );
         AppUser applicant = user(2L, "student");
         when(lectureRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(lecture));
         when(enrollmentRepository.getEnrollValidation(eq(10L), eq(2L), any(), any()))
@@ -125,7 +164,13 @@ class EnrollmentCommandServiceTest {
     // ENR-APPLY-003, CAP-RULE-002
     // 동일 강의에 활성 신청이 이미 존재하면 중복 신청을 거부하는지 검증한다.
     void apply_whenDuplicateEnrollmentExists_throws() {
-        Lecture lecture = openLecture();
+        LocalDateTime now = LocalDateTime.now();
+        Lecture lecture = openLecture(
+                now.minusHours(1),
+                now.plusHours(12),
+                now.plusDays(2),
+                now.plusDays(3)
+        );
         when(lectureRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(lecture));
         when(enrollmentRepository.getEnrollValidation(eq(10L), eq(2L), any(), any()))
                 .thenReturn(new EnrollValidation(1L, true));
@@ -139,7 +184,13 @@ class EnrollmentCommandServiceTest {
     // ENR-PAY-002
     // PENDING 신청의 결제 확정 시 상태를 CONFIRMED로 바꾸고 confirmedAt을 기록하는지 검증한다.
     void confirmPayment_confirmsEnrollment() {
-        Enrollment enrollment = pendingEnrollment(openLecture(), user(2L, "student"));
+        LocalDateTime now = LocalDateTime.now();
+        Enrollment enrollment = pendingEnrollment(openLecture(
+                now.minusHours(1),
+                now.plusHours(12),
+                now.plusDays(2),
+                now.plusDays(3)
+        ), user(2L, "student"));
         ReflectionTestUtils.setField(enrollment, "id", 200L);
         when(enrollmentRepository.findByIdForUpdate(200L)).thenReturn(Optional.of(enrollment));
 
@@ -155,7 +206,14 @@ class EnrollmentCommandServiceTest {
     // ENR-CANCEL-001, ENR-WAIT-002, CAP-CONC-001
     // 좌석을 점유하던 신청이 취소되면 대기열 첫 번째 신청을 PENDING으로 승격하는지 검증한다.
     void cancel_whenSeatReleased_promotesFirstWaitlisted() {
-        Lecture lecture = openLecture();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime recruitmentEndAt = now.plusHours(12);
+        Lecture lecture = openLecture(
+                now.minusHours(1),
+                recruitmentEndAt,
+                now.plusDays(2),
+                now.plusDays(3)
+        );
         Enrollment target = pendingEnrollment(lecture, user(2L, "student"));
         ReflectionTestUtils.setField(target, "id", 300L);
         Enrollment waitlisted = waitlistedEnrollment(lecture, user(3L, "waitlisted"));
@@ -172,6 +230,7 @@ class EnrollmentCommandServiceTest {
         verify(waitlistPolicy).validateWaitlisted(waitlisted);
         assertThat(target.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
         assertThat(waitlisted.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
+        assertThat(waitlisted.getPaymentDueAt()).isEqualTo(recruitmentEndAt);
         assertThat(response.status()).isEqualTo(EnrollmentStatus.CANCELLED);
     }
 
@@ -179,7 +238,13 @@ class EnrollmentCommandServiceTest {
     // ENR-CANCEL-001
     // 좌석을 점유하지 않던 신청 취소 시에는 대기열 승격이 발생하지 않는지 검증한다.
     void cancel_whenSeatNotReleased_doesNotPromoteWaitlist() {
-        Lecture lecture = openLecture();
+        LocalDateTime now = LocalDateTime.now();
+        Lecture lecture = openLecture(
+                now.minusHours(1),
+                now.plusHours(12),
+                now.plusDays(2),
+                now.plusDays(3)
+        );
         Enrollment target = waitlistedEnrollment(lecture, user(2L, "student"));
         ReflectionTestUtils.setField(target, "id", 301L);
         when(enrollmentRepository.findByIdForUpdate(301L)).thenReturn(Optional.of(target));
@@ -192,7 +257,12 @@ class EnrollmentCommandServiceTest {
         assertThat(target.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
     }
 
-    private Lecture openLecture() {
+    private Lecture openLecture(
+            LocalDateTime recruitmentStartAt,
+            LocalDateTime recruitmentEndAt,
+            LocalDateTime lectureStartAt,
+            LocalDateTime lectureEndAt
+    ) {
         AppUser creator = user(1L, "creator");
         Lecture lecture = Lecture.draft(
                 creator,
@@ -200,10 +270,10 @@ class EnrollmentCommandServiceTest {
                 "description",
                 10000L,
                 30,
-                LocalDateTime.now().minusDays(1),
-                LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(10),
-                LocalDateTime.now().plusDays(20)
+                recruitmentStartAt,
+                recruitmentEndAt,
+                lectureStartAt,
+                lectureEndAt
         );
         ReflectionTestUtils.setField(lecture, "id", 10L);
         lecture.changeStatus(LectureStatus.OPEN);
@@ -217,7 +287,7 @@ class EnrollmentCommandServiceTest {
     }
 
     private Enrollment pendingEnrollment(Lecture lecture, AppUser user) {
-        Enrollment enrollment = Enrollment.pending(lecture, user, LocalDateTime.now(), LocalDateTime.now().plusDays(1));
+        Enrollment enrollment = Enrollment.pending(lecture, user, LocalDateTime.now(), lecture.getRecruitmentEndAt());
         ReflectionTestUtils.setField(enrollment, "id", 300L);
         return enrollment;
     }

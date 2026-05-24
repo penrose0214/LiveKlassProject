@@ -14,6 +14,11 @@ public record LectureSummaryResponse(
         LocalDateTime recruitmentEndAt,
         LocalDateTime lectureStartAt,
         LocalDateTime lectureEndAt,
-        LectureStatus status
+        LectureStatus status,
+        Long occupiedCount,
+        Long confirmedCount,
+        Long waitlistedCount,
+        boolean canApply,
+        boolean canWaitlist
 ) {
 }
