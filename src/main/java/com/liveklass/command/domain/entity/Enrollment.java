@@ -116,4 +116,19 @@ public class Enrollment extends BaseTimeEntity {
                 null
         );
     }
+
+    public void confirm(LocalDateTime confirmedAt) {
+        this.status = EnrollmentStatus.CONFIRMED;
+        this.confirmedAt = confirmedAt;
+    }
+
+    public void cancel(LocalDateTime cancelledAt) {
+        this.status = EnrollmentStatus.CANCELLED;
+        this.cancelledAt = cancelledAt;
+    }
+
+    public void promoteToPending(LocalDateTime paymentDueAt) {
+        this.status = EnrollmentStatus.PENDING;
+        this.paymentDueAt = paymentDueAt;
+    }
 }
